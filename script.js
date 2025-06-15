@@ -3,9 +3,12 @@ let todos = JSON.parse(localStorage.getItem('todos')) || [];
 
 // DOM要素の取得
 const todoInput = document.getElementById('todoInput');
+const dueDateInput = document.getElementById('dueDateInput');
 const todoList = document.getElementById('todoList');
 const completedCount = document.getElementById('completedCount');
 const totalCount = document.getElementById('totalCount');
+const overdueCount = document.getElementById('overdueCount');
+const todayDueCount = document.getElementById('todayDueCount');
 
 // 初期表示
 renderTodos();
@@ -16,10 +19,13 @@ function addTodo() {
     const text = todoInput.value.trim();
     if (text === '') return;
     
+    const dueDate = dueDateInput.value;
+    
     const todo = {
         id: Date.now(),
         text: text,
         completed: false,
+        dueDate: dueDate || null,
         createdAt: new Date().toISOString()
     };
     
@@ -29,6 +35,7 @@ function addTodo() {
     updateStats();
     
     todoInput.value = '';
+    dueDateInput.value = '';
 }
 
 // Enterキーでタスク追加
@@ -60,13 +67,49 @@ function deleteTodo(id) {
     updateStats();
 }
 
+// 期限の状態をチェック
+function getDueDateStatus(dueDate) {
+    if (!dueDate) return null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(dueDate);
+    
+    if (due < today) return 'overdue';
+    if (due.getTime() === today.getTime()) return 'today';
+    return 'future';
+}
+
+// 期限の表示形式を取得
+function formatDueDate(dueDate) {
+    if (!dueDate) return '';
+    
+    const date = new Date(dueDate);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+        return '今日';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+        return '明日';
+    } else {
+        return date.toLocaleDateString('ja-JP');
+    }
+}
+
 // タスク一覧の表示
 function renderTodos() {
     todoList.innerHTML = '';
     
     todos.forEach(todo => {
         const li = document.createElement('li');
-        li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+        const dueStatus = getDueDateStatus(todo.dueDate);
+        
+        li.className = `todo-item ${todo.completed ? 'completed' : ''} ${dueStatus === 'overdue' ? 'overdue' : ''} ${dueStatus === 'today' ? 'today-due' : ''}`;
+        
+        const dueDateSpan = todo.dueDate ? 
+            `<span class="todo-due-date ${dueStatus === 'overdue' ? 'overdue' : ''} ${dueStatus === 'today' ? 'today' : ''}">期限: ${formatDueDate(todo.dueDate)}</span>` : '';
         
         li.innerHTML = `
             <input type="checkbox" 
@@ -74,6 +117,7 @@ function renderTodos() {
                    ${todo.completed ? 'checked' : ''} 
                    onchange="toggleTodo(${todo.id})">
             <span class="todo-text">${todo.text}</span>
+            ${dueDateSpan}
             <button class="delete-btn" onclick="deleteTodo(${todo.id})">削除</button>
         `;
         
@@ -85,9 +129,13 @@ function renderTodos() {
 function updateStats() {
     const completed = todos.filter(todo => todo.completed).length;
     const total = todos.length;
+    const overdue = todos.filter(todo => !todo.completed && getDueDateStatus(todo.dueDate) === 'overdue').length;
+    const todayDue = todos.filter(todo => !todo.completed && getDueDateStatus(todo.dueDate) === 'today').length;
     
     completedCount.textContent = completed;
     totalCount.textContent = total;
+    overdueCount.textContent = overdue;
+    todayDueCount.textContent = todayDue;
 }
 
 // ローカルストレージに保存
@@ -108,18 +156,19 @@ function clearAllTodos() {
 // サンプルデータの追加（開発用）
 function addSampleTodos() {
     const sampleTodos = [
-        'Gitの基本を学ぶ',
-        'ブランチを作成する',
-        'コミットを実行する',
-        'マージを練習する',
-        'コンフリクトを解決する'
+        { text: 'Gitの基本を学ぶ', dueDate: null },
+        { text: 'ブランチを作成する', dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+        { text: 'コミットを実行する', dueDate: new Date().toISOString().split('T')[0] },
+        { text: 'マージを練習する', dueDate: new Date(Date.now() - 86400000).toISOString().split('T')[0] },
+        { text: 'コンフリクトを解決する', dueDate: null }
     ];
     
-    sampleTodos.forEach(text => {
+    sampleTodos.forEach(item => {
         const todo = {
             id: Date.now() + Math.random(),
-            text: text,
+            text: item.text,
             completed: false,
+            dueDate: item.dueDate,
             createdAt: new Date().toISOString()
         };
         todos.push(todo);
