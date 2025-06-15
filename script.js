@@ -1,5 +1,29 @@
 // TODOアプリの機能
-let todos = JSON.parse(localStorage.getItem('todos')) || [];
+let todos = [];
+
+// ローカルストレージからデータを安全に読み込み
+function loadTodos() {
+    try {
+        const stored = localStorage.getItem('todos');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            // 配列であることを確認
+            if (Array.isArray(parsed)) {
+                todos = parsed;
+            } else {
+                console.warn('ローカルストレージのデータが配列ではありません。初期化します。');
+                todos = [];
+            }
+        } else {
+            todos = [];
+        }
+    } catch (error) {
+        console.error('ローカルストレージの読み込みエラー:', error);
+        todos = [];
+        // 破損したデータをクリア
+        localStorage.removeItem('todos');
+    }
+}
 
 // DOM要素の取得
 const todoInput = document.getElementById('todoInput');
@@ -14,7 +38,8 @@ const highPriorityCount = document.getElementById('highPriorityCount');
 const mediumPriorityCount = document.getElementById('mediumPriorityCount');
 const lowPriorityCount = document.getElementById('lowPriorityCount');
 
-// 初期表示
+// 初期化
+loadTodos();
 renderTodos();
 updateStats();
 
@@ -78,38 +103,57 @@ function deleteTodo(id) {
 function getDueDateStatus(dueDate) {
     if (!dueDate) return null;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const due = new Date(dueDate);
-    
-    if (due < today) return 'overdue';
-    if (due.getTime() === today.getTime()) return 'today';
-    return 'future';
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const due = new Date(dueDate);
+        
+        if (isNaN(due.getTime())) {
+            console.warn('無効な日付形式:', dueDate);
+            return null;
+        }
+        
+        if (due < today) return 'overdue';
+        if (due.getTime() === today.getTime()) return 'today';
+        return 'future';
+    } catch (error) {
+        console.error('日付処理エラー:', error);
+        return null;
+    }
 }
 
 // 期限の表示形式を取得
 function formatDueDate(dueDate) {
     if (!dueDate) return '';
     
-    const date = new Date(dueDate);
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    try {
+        const date = new Date(dueDate);
+        if (isNaN(date.getTime())) {
+            return '無効な日付';
+        }
+        
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
     
-    // デバッグ用ログ出力
-    console.log('formatDueDate called with:', dueDate);
-    console.log('Parsed date:', date);
-    console.log('Today:', today);
-    console.log('Tomorrow:', tomorrow);
-    
-    if (date.toDateString() === today.toDateString()) {
+        // デバッグ用ログ出力
+        console.log('formatDueDate called with:', dueDate);
+        console.log('Parsed date:', date);
+        console.log('Today:', today);
+        console.log('Tomorrow:', tomorrow);
+        
+        if (date.toDateString() === today.toDateString()) {
         console.log('Returning: 今日');
-        return '今日';
-    } else if (date.toDateString() === tomorrow.toDateString()) {
+            return '今日';
+        } else if (date.toDateString() === tomorrow.toDateString()) {
         console.log('Returning: 明日');
-        return '明日';
-    } else {
-        const formattedDate = date.toLocaleDateString('ja-JP');
+            return '明日';
+        } else {
+            const formattedDate = date.toLocaleDateString('ja-JP');
+        }
+    } catch (error) {
+        console.error('日付フォーマットエラー:', error);
+        return 'エラー';
         console.log('Returning:', formattedDate);
         return formattedDate;
     }
@@ -207,9 +251,14 @@ function updateStats() {
     lowPriorityCount.textContent = lowPriority;
 }
 
-// ローカルストレージに保存
+// ローカルストレージに安全に保存
 function saveTodos() {
-    localStorage.setItem('todos', JSON.stringify(todos));
+    try {
+        localStorage.setItem('todos', JSON.stringify(todos));
+    } catch (error) {
+        console.error('ローカルストレージの保存エラー:', error);
+        alert('データの保存に失敗しました。ブラウザの設定を確認してください。');
+    }
 }
 
 // 全タスク削除機能（デバッグ用）
@@ -219,6 +268,16 @@ function clearAllTodos() {
         saveTodos();
         renderTodos();
         updateStats();
+    }
+}
+
+// データ修復機能
+function repairData() {
+    if (confirm('破損したデータを修復しますか？')) {
+        loadTodos();
+        renderTodos();
+        updateStats();
+        alert('データ修復が完了しました。');
     }
 }
 
