@@ -136,11 +136,11 @@ function formatDueDate(dueDate) {
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
     
-    // デバッグ用ログ出力
-    console.log('formatDueDate called with:', dueDate);
-    console.log('Parsed date:', date);
-    console.log('Today:', today);
-    console.log('Tomorrow:', tomorrow);
+        // デバッグ用ログ出力
+        console.log('formatDueDate called with:', dueDate);
+        console.log('Parsed date:', date);
+        console.log('Today:', today);
+        console.log('Tomorrow:', tomorrow);
         
         if (date.toDateString() === today.toDateString()) {
         console.log('Returning: 今日');
