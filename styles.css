@@ -55,6 +55,21 @@ h1 {
     border-color: #667eea;
 }
 
+.priority-input {
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    min-width: 120px;
+    background: white;
+}
+
+.priority-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
 .due-date-input {
     padding: 12px;
     border: 2px solid #ddd;
@@ -87,6 +102,25 @@ button:hover {
 .todo-list h2 {
     color: #333;
     margin-bottom: 15px;
+}
+
+.sort-controls {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sort-controls label {
+    font-weight: bold;
+    color: #333;
+}
+
+.sort-controls select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: white;
 }
 
 #todoList {
@@ -128,6 +162,18 @@ button:hover {
     background: #fffbf0;
 }
 
+.todo-item.priority-high {
+    border-left-color: #dc3545;
+}
+
+.todo-item.priority-medium {
+    border-left-color: #ffc107;
+}
+
+.todo-item.priority-low {
+    border-left-color: #28a745;
+}
+
 .todo-checkbox {
     margin-right: 15px;
     transform: scale(1.2);
@@ -136,6 +182,31 @@ button:hover {
 .todo-text {
     flex: 1;
     font-size: 16px;
+}
+
+.todo-priority {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    margin-right: 15px;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: center;
+}
+
+.todo-priority.high {
+    background: #dc3545;
+    color: white;
+}
+
+.todo-priority.medium {
+    background: #ffc107;
+    color: #333;
+}
+
+.todo-priority.low {
+    background: #28a745;
+    color: white;
 }
 
 .todo-due-date {

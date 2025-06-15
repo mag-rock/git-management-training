@@ -3,12 +3,16 @@ let todos = JSON.parse(localStorage.getItem('todos')) || [];
 
 // DOM要素の取得
 const todoInput = document.getElementById('todoInput');
+const priorityInput = document.getElementById('priorityInput');
 const dueDateInput = document.getElementById('dueDateInput');
 const todoList = document.getElementById('todoList');
 const completedCount = document.getElementById('completedCount');
 const totalCount = document.getElementById('totalCount');
 const overdueCount = document.getElementById('overdueCount');
 const todayDueCount = document.getElementById('todayDueCount');
+const highPriorityCount = document.getElementById('highPriorityCount');
+const mediumPriorityCount = document.getElementById('mediumPriorityCount');
+const lowPriorityCount = document.getElementById('lowPriorityCount');
 
 // 初期表示
 renderTodos();
@@ -19,12 +23,14 @@ function addTodo() {
     const text = todoInput.value.trim();
     if (text === '') return;
     
+    const priority = priorityInput.value;
     const dueDate = dueDateInput.value;
     
     const todo = {
         id: Date.now(),
         text: text,
         completed: false,
+        priority: priority || null,
         dueDate: dueDate || null,
         createdAt: new Date().toISOString()
     };
@@ -35,6 +41,7 @@ function addTodo() {
     updateStats();
     
     todoInput.value = '';
+    priorityInput.value = '';
     dueDateInput.value = '';
 }
 
@@ -98,6 +105,48 @@ function formatDueDate(dueDate) {
     }
 }
 
+// 優先度の表示テキストを取得
+function getPriorityText(priority) {
+    switch(priority) {
+        case 'high': return '高';
+        case 'medium': return '中';
+        case 'low': return '低';
+        default: return '';
+    }
+}
+
+// 優先度の数値を取得（ソート用）
+function getPriorityValue(priority) {
+    switch(priority) {
+        case 'high': return 3;
+        case 'medium': return 2;
+        case 'low': return 1;
+        default: return 0;
+    }
+}
+
+// タスクのソート
+function sortTodos() {
+    const sortType = document.getElementById('sortSelect').value;
+    
+    todos.sort((a, b) => {
+        switch(sortType) {
+            case 'priority':
+                return getPriorityValue(b.priority) - getPriorityValue(a.priority);
+            case 'dueDate':
+                if (!a.dueDate && !b.dueDate) return 0;
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate) - new Date(b.dueDate);
+            case 'created':
+            default:
+                return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+    });
+    
+    renderTodos();
+}
+
 // タスク一覧の表示
 function renderTodos() {
     todoList.innerHTML = '';
@@ -106,7 +155,10 @@ function renderTodos() {
         const li = document.createElement('li');
         const dueStatus = getDueDateStatus(todo.dueDate);
         
-        li.className = `todo-item ${todo.completed ? 'completed' : ''} ${dueStatus === 'overdue' ? 'overdue' : ''} ${dueStatus === 'today' ? 'today-due' : ''}`;
+        li.className = `todo-item ${todo.completed ? 'completed' : ''} ${dueStatus === 'overdue' ? 'overdue' : ''} ${dueStatus === 'today' ? 'today-due' : ''} ${todo.priority ? 'priority-' + todo.priority : ''}`;
+        
+        const prioritySpan = todo.priority ? 
+            `<span class="todo-priority ${todo.priority}">${getPriorityText(todo.priority)}</span>` : '';
         
         const dueDateSpan = todo.dueDate ? 
             `<span class="todo-due-date ${dueStatus === 'overdue' ? 'overdue' : ''} ${dueStatus === 'today' ? 'today' : ''}">期限: ${formatDueDate(todo.dueDate)}</span>` : '';
@@ -117,6 +169,7 @@ function renderTodos() {
                    ${todo.completed ? 'checked' : ''} 
                    onchange="toggleTodo(${todo.id})">
             <span class="todo-text">${todo.text}</span>
+            ${prioritySpan}
             ${dueDateSpan}
             <button class="delete-btn" onclick="deleteTodo(${todo.id})">削除</button>
         `;
@@ -131,11 +184,17 @@ function updateStats() {
     const total = todos.length;
     const overdue = todos.filter(todo => !todo.completed && getDueDateStatus(todo.dueDate) === 'overdue').length;
     const todayDue = todos.filter(todo => !todo.completed && getDueDateStatus(todo.dueDate) === 'today').length;
+    const highPriority = todos.filter(todo => !todo.completed && todo.priority === 'high').length;
+    const mediumPriority = todos.filter(todo => !todo.completed && todo.priority === 'medium').length;
+    const lowPriority = todos.filter(todo => !todo.completed && todo.priority === 'low').length;
     
     completedCount.textContent = completed;
     totalCount.textContent = total;
     overdueCount.textContent = overdue;
     todayDueCount.textContent = todayDue;
+    highPriorityCount.textContent = highPriority;
+    mediumPriorityCount.textContent = mediumPriority;
+    lowPriorityCount.textContent = lowPriority;
 }
 
 // ローカルストレージに保存
@@ -156,11 +215,11 @@ function clearAllTodos() {
 // サンプルデータの追加（開発用）
 function addSampleTodos() {
     const sampleTodos = [
-        { text: 'Gitの基本を学ぶ', dueDate: null },
-        { text: 'ブランチを作成する', dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
-        { text: 'コミットを実行する', dueDate: new Date().toISOString().split('T')[0] },
-        { text: 'マージを練習する', dueDate: new Date(Date.now() - 86400000).toISOString().split('T')[0] },
-        { text: 'コンフリクトを解決する', dueDate: null }
+        { text: 'Gitの基本を学ぶ', priority: 'high', dueDate: null },
+        { text: 'ブランチを作成する', priority: 'medium', dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+        { text: 'コミットを実行する', priority: 'high', dueDate: new Date().toISOString().split('T')[0] },
+        { text: 'マージを練習する', priority: 'low', dueDate: new Date(Date.now() - 86400000).toISOString().split('T')[0] },
+        { text: 'コンフリクトを解決する', priority: 'medium', dueDate: null }
     ];
     
     sampleTodos.forEach(item => {
@@ -168,6 +227,7 @@ function addSampleTodos() {
             id: Date.now() + Math.random(),
             text: item.text,
             completed: false,
+            priority: item.priority,
             dueDate: item.dueDate,
             createdAt: new Date().toISOString()
         };
