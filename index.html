@@ -13,6 +13,7 @@
         
         <div class="todo-form">
             <input type="text" id="todoInput" placeholder="新しいタスクを入力してください">
+            <input type="date" id="dueDateInput" class="due-date-input">
             <button onclick="addTodo()">追加</button>
         </div>
         
@@ -25,6 +26,7 @@
         
         <div class="stats">
             <p>完了済み: <span id="completedCount">0</span> / 総数: <span id="totalCount">0</span></p>
+            <p>期限切れ: <span id="overdueCount">0</span> / 今日期限: <span id="todayDueCount">0</span></p>
         </div>
     </div>
     
