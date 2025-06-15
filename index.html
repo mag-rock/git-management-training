@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODOアプリ - Git練習用</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>TODOアプリ</h1>
+        <p class="subtitle">Gitブランチ管理練習用プロジェクト</p>
+        
+        <div class="todo-form">
+            <input type="text" id="todoInput" placeholder="新しいタスクを入力してください">
+            <button onclick="addTodo()">追加</button>
+        </div>
+        
+        <div class="todo-list">
+            <h2>タスク一覧</h2>
+            <ul id="todoList">
+                <!-- タスクがここに動的に追加されます -->
+            </ul>
+        </div>
+        
+        <div class="stats">
+            <p>完了済み: <span id="completedCount">0</span> / 総数: <span id="totalCount">0</span></p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 

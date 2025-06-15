@@ -1,0 +1,31 @@
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# エディタ設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ログファイル
+*.log
+
+# 一時ファイル
+*.tmp
+*.temp
+
+# バックアップファイル
+*.bak
+*.backup
+
+# 依存関係（将来的に追加される可能性）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ビルドファイル（将来的に追加される可能性）
+dist/
+build/ 
