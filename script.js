@@ -96,12 +96,22 @@ function formatDueDate(dueDate) {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
+    // デバッグ用ログ出力
+    console.log('formatDueDate called with:', dueDate);
+    console.log('Parsed date:', date);
+    console.log('Today:', today);
+    console.log('Tomorrow:', tomorrow);
+    
     if (date.toDateString() === today.toDateString()) {
+        console.log('Returning: 今日');
         return '今日';
     } else if (date.toDateString() === tomorrow.toDateString()) {
+        console.log('Returning: 明日');
         return '明日';
     } else {
-        return date.toLocaleDateString('ja-JP');
+        const formattedDate = date.toLocaleDateString('ja-JP');
+        console.log('Returning:', formattedDate);
+        return formattedDate;
     }
 }
 
@@ -237,4 +247,4 @@ function addSampleTodos() {
     saveTodos();
     renderTodos();
     updateStats();
-} 
+}
